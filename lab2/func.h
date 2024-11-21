@@ -15,7 +15,7 @@
 #include<random>
 
 const GLdouble derta = 10;
-enum GLState {
+enum State {
 	MoveObject,
 	MakePoint,
 	AutoMove
@@ -24,17 +24,24 @@ enum GLState {
 struct GLColor;
 struct GLTransform;
 
-class GLObject;
-class GLWorld;
+class Object;
+class World;
 
 // GLObject 派生类
-class GLPoint; // 点
+class Executor; // 点
 class GLBezier; // 贝塞尔曲线
 
 struct GLColor
 {
 	GLfloat r = 0, g = 0, b = 0;
 };
+
+/*
+N:1,0,0
+S:0,1,0
+E:0,0,1
+W:1,1,0
+*/
 
 struct GLTransform
 {
@@ -44,16 +51,17 @@ struct GLTransform
 	GLdouble sx = 1, sy = 1, sz = 1;
 };
 
-class GLObject
+class Object
 {
 public:
+	char dir = 'N';
 	GLint id = 0;
 	GLColor color;
 	GLTransform transform;
 	bool movable = false;
 	bool visible = true;
 
-	GLWorld* parentWorld;
+	World* parentWorld;
 
 	virtual void Draw(GLenum RenderMode = GL_RENDER) {}
 
@@ -71,14 +79,14 @@ public:
 
 };
 
-class GLWorld
+class World
 {
 public:
-	GLObject* objects[MAX_OBJECTS];
+	Object* objects[MAX_OBJECTS];
 	GLint count = 0;
 
-	GLWorld() = default;
-	~GLWorld() {
+	World() = default;
+	~World() {
 		for (int i = count - 1; i >= 0; --i)
 		{
 			delete objects[i];
@@ -91,7 +99,7 @@ public:
 		if (count < MAX_OBJECTS)
 		{
 			T* ret = new T;
-			objects[count] = (GLObject*)ret;
+			objects[count] = (Object*)ret;
 			objects[count]->parentWorld = this;
 			objects[count]->id = count;
 			++count;
@@ -137,7 +145,7 @@ private:
 // 使用外部定义的世界坐标系裁剪空间，供设置选取时的裁剪窗口
 extern GLfloat xwcMin, xwcMax, ywcMin, ywcMax;
 
-void GLWorld::pickRects(GLint button, GLint action, GLint xMouse,
+void World::pickRects(GLint button, GLint action, GLint xMouse,
 	GLint yMouse)
 {
 	GLuint pickBuffer[DEFAULT_PICK_BUFFER_SIZE];
@@ -191,7 +199,7 @@ void GLWorld::pickRects(GLint button, GLint action, GLint xMouse,
 	glutPostRedisplay();
 }
 
-void GLWorld::processPicks(GLint nPicks, GLuint pickBuffer[])
+void World::processPicks(GLint nPicks, GLuint pickBuffer[])
 {
 
 	// 储存获取到的最后一个 ID，即认为后绘制的图像在先绘制的图形之上
@@ -207,12 +215,16 @@ void GLWorld::processPicks(GLint nPicks, GLuint pickBuffer[])
 	return;
 }
 
-class GLPoint : public GLObject
+class Executor : public Object
 {
 public:
-	GLPoint() {
+	Executor() {
 		color.r = 1;
+		dir = 'N';
+		transform.x = 0.0;
+		transform.y = 0.0;
 	}
+
 	//GLPoint* ctrlPoints[MAX_BEZIER_CONTROL_POINTS_NUM];
 	int count = 0;
 	virtual void KeyboardMove(GLdouble right, GLdouble up) override
@@ -262,12 +274,29 @@ public:
 
 	virtual void Draw(GLenum RenderMode = GL_RENDER) {
 		// 需要在绘制前初始化控制点
-		if (count == 0) return;
+		//if (count == 0) return;
 		/*
 			count = 0意味着这是空的点，是Create Car时候new的，不需要画，
 			事实上如果画出来是在窗口原点（中心）
 		*/
 		if (RenderMode == GL_SELECT) glLoadName((GLuint)id);
+		switch (dir)
+		{
+		case 'N':
+			color.r = 1, color.g = 0, color.b = 0;
+			break;
+		case 'S':
+			color.r = 0, color.g = 1, color.b = 0;
+			break;
+		case 'E':
+			color.r = 0, color.g = 0, color.b = 1;
+			break;
+		case 'W':
+			color.r = 1, color.g = 1, color.b = 0;
+			break;
+		default:
+			break;
+		}
 		glColor3f(color.r, color.g, color.b);
 		glPointSize(DEFAULT_POINT_SIZE);
 

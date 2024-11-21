@@ -1,10 +1,10 @@
 #include "func.h"
 #include<iostream>
+#include <windows.h>
 
+World MyWorld;
 
-GLWorld MyWorld;
-
-GLState MyState = MoveObject;
+State MyState = MoveObject;
 /* Set initial size of the display window. */
 GLsizei winWidth = 900, winHeight = 600;
 
@@ -19,8 +19,11 @@ struct menuEntryStruct {
 
 static menuEntryStruct mainMenu[] = {
 "Reset", '0',
-"Creat Car", '1',
-"Auto Move",'2',
+"Creat Car by Mouse", '1',
+"Creat Car by Keyboard", '2',
+
+"Auto Move",'3',
+"Get Coordinate",'4',
 "Quit", 27, //ESC 键（ASCII: 27）
 //"MakePoint",'2',//MakePoint
 //"MovePoint",'3'
@@ -52,12 +55,13 @@ void userEventAction(char key) {
 		MyWorld.pickedObjectId = -1;
 		MyState = MoveObject;
 		break;
-	case '1': // bezier
+	case '1': // Creat Car by Mouse
 		if (MyState == MoveObject)
 		{
-			GLPoint *tem= MyWorld.NewObject<GLPoint>();
+			Executor *tem= MyWorld.NewObject<Executor>();
 			MyState = MakePoint;
 			MyWorld.pickedObjectId = tem->id;
+			
 
 		}
 		else if (MyState == MakePoint)
@@ -66,8 +70,28 @@ void userEventAction(char key) {
 			MyWorld.pickedObjectId = -1;
 		}
 		break;
+	case '2': // Creat Car by Keyboard
+		if (MyState == MoveObject)
+		{
+			Executor* tem = MyWorld.NewObject<Executor>();
 
-	case '2'://Auto Move
+			MyWorld.pickedObjectId = tem->id;
+			std::printf("Please initialize the coordinate by 'int x,int y,char dir':\n ");
+			char dot;
+			//清除键盘缓存区
+			HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+			FlushConsoleInputBuffer(hStdin);
+			std::cin >> tem->transform.x >> dot >> tem->transform.y >> dot >> tem->dir;
+			std::cout << "Making Car No." << MyWorld.pickedObjectId << " Successfully!" << std::endl;
+			//std::cout<< tem->transform.x << dot << tem->transform.y << dot << tem->dir<<std::endl;
+		}
+		else if (MyState == MakePoint)
+		{
+			MyState = MoveObject;
+			MyWorld.pickedObjectId = -1;
+		}
+		break;
+	case '3'://Auto Move
 		if (MyState == MakePoint)
 		{
 			MyState = MoveObject;
@@ -91,24 +115,79 @@ void userEventAction(char key) {
 		if (MyState == AutoMove)
 			MyState = MoveObject;
 		break;
-	case 'w':
+	case 'm':
 		if (MyWorld.pickedObjectId != -1) {
-			MyWorld.objects[MyWorld.pickedObjectId]->KeyboardMove(0, derta);
+			switch (MyWorld.objects[MyWorld.pickedObjectId]->dir)
+			{
+			case 'N':
+				MyWorld.objects[MyWorld.pickedObjectId]->KeyboardMove(0, derta);
+				break;
+			case 'S':
+				MyWorld.objects[MyWorld.pickedObjectId]->KeyboardMove(0, -derta);
+				break;
+			case 'E':
+				MyWorld.objects[MyWorld.pickedObjectId]->KeyboardMove(derta, 0);
+				break;
+			case 'W':
+				MyWorld.objects[MyWorld.pickedObjectId]->KeyboardMove(-derta, 0);
+			default:
+				break;
+			}
+			
 		}
 		break;
-	case 's':
+	case 'l':
 		if (MyWorld.pickedObjectId != -1) {
-			MyWorld.objects[MyWorld.pickedObjectId]->KeyboardMove(0, -derta);
+			switch (MyWorld.objects[MyWorld.pickedObjectId]->dir)
+			{
+			case 'N':
+				MyWorld.objects[MyWorld.pickedObjectId]->dir = 'W';
+				break;
+			case 'S':
+				MyWorld.objects[MyWorld.pickedObjectId]->dir = 'E';
+				break;
+			case 'E':
+				MyWorld.objects[MyWorld.pickedObjectId]->dir = 'N';
+				break;
+			case 'W':
+				MyWorld.objects[MyWorld.pickedObjectId]->dir = 'S';
+				break;
+			default:
+				break;
+			}
+			
 		}
 		break;
-	case 'a':
+	case 'r':
 		if (MyWorld.pickedObjectId != -1) {
-			MyWorld.objects[MyWorld.pickedObjectId]->KeyboardMove(-derta, 0);
+			switch (MyWorld.objects[MyWorld.pickedObjectId]->dir)
+			{
+			case 'N':
+				MyWorld.objects[MyWorld.pickedObjectId]->dir = 'E';
+				break;
+			case 'S':
+				MyWorld.objects[MyWorld.pickedObjectId]->dir = 'W';
+				break;
+			case 'E':
+				MyWorld.objects[MyWorld.pickedObjectId]->dir = 'S';
+				break;
+			case 'W':
+				MyWorld.objects[MyWorld.pickedObjectId]->dir = 'N';
+				break;
+			default:
+				break;
+			}
 		}
 		break;
-	case 'd':
-		if (MyWorld.pickedObjectId != -1) {
-			MyWorld.objects[MyWorld.pickedObjectId]->KeyboardMove(derta, 0);
+	case '4':
+		if (MyWorld.pickedObjectId == -1)
+			std::printf("None...\n");
+		else
+		{
+			std::cout << "Car No." << MyWorld.pickedObjectId<<": ";
+			std::cout <<"(x:"<< MyWorld.objects[MyWorld.pickedObjectId]->transform.x << ",y:" <<
+				MyWorld.objects[MyWorld.pickedObjectId]->transform.y << ",dir:" <<
+				MyWorld.objects[MyWorld.pickedObjectId]->dir << ")" << std::endl;
 		}
 		break;
 	case 27: // ESC 键（ASCII: 27）退出
@@ -183,7 +262,7 @@ void mouseButton(int button, int state, int x, int y)
 		}
 		else if (MyState == MakePoint)
 		{
-			if (GLObject* ptr = MyWorld.objects[MyWorld.pickedObjectId])
+			if (Object* ptr = MyWorld.objects[MyWorld.pickedObjectId])
 			{
 				// 从窗口到世界坐标系
 				GLdouble winx = (GLdouble)x;
@@ -212,7 +291,7 @@ void mouseMotion(int x, int y)
 	if (MyWorld.pickedObjectId == -1) return;
 	if (!MyWorld.objects[MyWorld.pickedObjectId]->movable) return;
 
-	GLObject* ptr = MyWorld.objects[MyWorld.pickedObjectId];
+	Object* ptr = MyWorld.objects[MyWorld.pickedObjectId];
 
 	// 从窗口到世界坐标系
 	GLdouble winx = (GLdouble)x;
@@ -245,7 +324,7 @@ int main(int argc, char** argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
 	glutInitWindowSize(winWidth, winHeight);
-	glutCreateWindow("Example");
+	glutCreateWindow("Executor_example");
 
 	init();
 
