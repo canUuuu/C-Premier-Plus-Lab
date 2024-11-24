@@ -1,0 +1,2 @@
+D:\program\MinGW\bin\ar.exe qc D:\qi\assignments\C++\lab\Module\lib\libsrc.a CMakeFiles/src.dir/func.cpp.obj
+D:\program\MinGW\bin\ranlib.exe D:\qi\assignments\C++\lab\Module\lib\libsrc.a

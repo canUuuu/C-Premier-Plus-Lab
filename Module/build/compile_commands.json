@@ -1,0 +1,14 @@
+[
+{
+  "directory": "D:/qi/assignments/C++/lab/Module/build",
+  "command": "D:\\program\\MinGW\\bin\\g++.exe  @CMakeFiles/test.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\test.dir\\c++lab2_car.cpp.obj -c D:\\qi\\assignments\\C++\\lab\\Module\\c++lab2_car.cpp",
+  "file": "D:/qi/assignments/C++/lab/Module/c++lab2_car.cpp",
+  "output": "CMakeFiles/test.dir/c++lab2_car.cpp.obj"
+},
+{
+  "directory": "D:/qi/assignments/C++/lab/Module/build/src",
+  "command": "D:\\program\\MinGW\\bin\\g++.exe   -g -std=gnu++17 -Wall -Werror -o CMakeFiles\\src.dir\\func.cpp.obj -c D:\\qi\\assignments\\C++\\lab\\Module\\src\\func.cpp",
+  "file": "D:/qi/assignments/C++/lab/Module/src/func.cpp",
+  "output": "src/CMakeFiles/src.dir/func.cpp.obj"
+}
+]

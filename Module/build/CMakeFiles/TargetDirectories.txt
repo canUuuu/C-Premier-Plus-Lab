@@ -1,0 +1,6 @@
+D:/qi/assignments/C++/lab/Module/build/CMakeFiles/test.dir
+D:/qi/assignments/C++/lab/Module/build/CMakeFiles/edit_cache.dir
+D:/qi/assignments/C++/lab/Module/build/CMakeFiles/rebuild_cache.dir
+D:/qi/assignments/C++/lab/Module/build/src/CMakeFiles/src.dir
+D:/qi/assignments/C++/lab/Module/build/src/CMakeFiles/edit_cache.dir
+D:/qi/assignments/C++/lab/Module/build/src/CMakeFiles/rebuild_cache.dir
